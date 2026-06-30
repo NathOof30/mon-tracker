@@ -9,7 +9,16 @@ async function handler(req, res) {
     return res.status(400).json({ error: 'Nom invalide' });
   }
 
-  const id = await PixelService.createPixel(name);
+  const userId = req.session.user.id;
+  const pixelLimit = req.session.user.pixelLimit || 10;
+
+  // Vérifier la limite de pixels
+  const currentCount = await PixelService.countPixels(userId);
+  if (currentCount >= pixelLimit) {
+    return res.status(403).json({ error: `Limite atteinte (${pixelLimit} pixels max). Contactez l'administrateur.` });
+  }
+
+  const id = await PixelService.createPixel(name, userId);
   res.status(201).json({ id });
 }
 export default withAdminApi(handler);

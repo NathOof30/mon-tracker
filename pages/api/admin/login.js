@@ -1,11 +1,9 @@
 import { withApiSession } from '../../../lib/session.js';
-import bcrypt from 'bcryptjs';
+import { UserService } from '../../../lib/userService.js';
 
-// Rate limiting simple basé sur un Map en mémoire
-// Note : sur Vercel serverless, chaque instance a son propre compteur.
-// Pour un rate limiting robuste en production, utiliser Vercel KV (Redis).
+// Rate limiting simple
 const loginAttempts = new Map();
-const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const WINDOW_MS = 15 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
 
 function isRateLimited(ip) {
@@ -27,38 +25,24 @@ async function handler(req, res) {
     return res.status(429).json({ error: 'Trop de tentatives. Réessayez dans 15 minutes.' });
   }
 
-  const { password } = req.body;
-  if (!password || typeof password !== 'string') {
-    return res.status(400).json({ error: 'Mot de passe requis' });
+  const { email, password } = req.body;
+  if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
+    return res.status(400).json({ error: 'Email et mot de passe requis' });
   }
 
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  let isValid = false;
-
-  // Si ADMIN_PASSWORD commence par '$2', c'est un hash bcrypt
-  if (adminPassword.startsWith('$2')) {
-    isValid = await bcrypt.compare(password, adminPassword);
-  } else {
-    // Fallback : comparaison directe (rétrocompatibilité)
-    // Utilisation de timingSafeEqual pour éviter les attaques par timing
-    const crypto = await import('crypto');
-    try {
-      isValid = crypto.timingSafeEqual(
-        Buffer.from(password),
-        Buffer.from(adminPassword)
-      );
-    } catch {
-      isValid = false; // Longueurs différentes
-    }
+  const user = await UserService.authenticate(email, password);
+  if (!user) {
+    return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
   }
 
-  if (isValid) {
-    req.session.user = { isAdmin: true, loginAt: Date.now() };
-    await req.session.save();
-    return res.json({ success: true });
-  }
-
-  res.status(401).json({ error: 'Mot de passe incorrect' });
+  req.session.user = {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    pixelLimit: user.pixelLimit,
+  };
+  await req.session.save();
+  return res.json({ success: true, role: user.role });
 }
 
 export default withApiSession(handler);

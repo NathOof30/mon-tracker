@@ -155,7 +155,8 @@ export default function PixelDetail({ pixel, host }) {
 
 export const getServerSideProps = withAdminSsr(async (context) => {
   const { id } = context.params;
-  const pixel = await PixelService.getPixelById(id);
+  const userId = context.req.session.user.id;
+  const pixel = await PixelService.getPixelById(id, userId);
   const host = context.req.headers.host;
   return { props: { pixel, host } };
 });

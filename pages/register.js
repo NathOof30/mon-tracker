@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 
-export default function Login() {
+export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -12,9 +13,14 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
-    const res = await fetch('/api/admin/login', {
+    if (password !== confirm) {
+      setError('Les mots de passe ne correspondent pas');
+      return;
+    }
+
+    setLoading(true);
+    const res = await fetch('/api/admin/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -24,19 +30,15 @@ export default function Login() {
     setLoading(false);
 
     if (res.ok) {
-      if (data.role === 'superadmin') {
-        router.push('/superadmin');
-      } else {
-        router.push('/admin');
-      }
+      router.push('/admin');
     } else {
-      setError(data.error || 'Connexion échouée');
+      setError(data.error || 'Inscription échouée');
     }
   };
 
   return (
     <div className="container" style={{ maxWidth: 420, marginTop: '80px' }}>
-      <h1 style={{ marginBottom: 20, borderBottom: '2px solid var(--border)', paddingBottom: 10 }}>Connexion</h1>
+      <h1 style={{ marginBottom: 20, borderBottom: '2px solid var(--border)', paddingBottom: 10 }}>Créer un compte</h1>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
         <input
           type="email"
@@ -48,19 +50,28 @@ export default function Login() {
         />
         <input
           type="password"
-          placeholder="Mot de passe"
+          placeholder="Mot de passe (min 8 chars, 1 majuscule, 1 chiffre)"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
+          minLength={8}
+          style={{ width: '100%' }}
+        />
+        <input
+          type="password"
+          placeholder="Confirmer le mot de passe"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
           required
           style={{ width: '100%' }}
         />
         <button type="submit" disabled={loading}>
-          {loading ? 'Connexion...' : 'Se connecter'}
+          {loading ? 'Inscription...' : 'Créer mon compte'}
         </button>
         {error && <div style={{ background: 'transparent', color: 'red', padding: 10, border: '2px solid red' }}>{error}</div>}
       </form>
       <div style={{ marginTop: 20, fontSize: '0.9em', textAlign: 'center' }}>
-        Pas encore de compte ? <Link href="/register">Créer un compte</Link>
+        Déjà un compte ? <Link href="/login">Se connecter</Link>
       </div>
     </div>
   );
