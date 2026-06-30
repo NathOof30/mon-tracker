@@ -42,6 +42,9 @@ next-env.d.ts
 
 # Custom additions
 DEV_DOCS.md
+doc.md
+test*.js
+test*.gif
 *.db
 *.sqlite
 next.txt
