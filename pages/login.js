@@ -21,12 +21,18 @@ export default function Login() {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: '100px auto', textAlign: 'center', fontFamily: 'sans-serif' }}>
-      <h1>🔐 Admin</h1>
-      <form onSubmit={handleSubmit}>
-        <input type="password" placeholder="Mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: 10, marginBottom: 10 }} />
-        <button type="submit" style={{ padding: '10px 20px' }}>Se connecter</button>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+    <div className="container" style={{ maxWidth: 400, marginTop: '100px' }}>
+      <h1 style={{ marginBottom: 20, borderBottom: '2px solid var(--border)', paddingBottom: 10 }}>Administration</h1>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+        <input 
+          type="password" 
+          placeholder="Mot de passe" 
+          value={password} 
+          onChange={(e) => setPassword(e.target.value)} 
+          style={{ width: '100%' }}
+        />
+        <button type="submit">Se connecter</button>
+        {error && <div style={{ background: 'transparent', color: 'red', padding: 10, border: '2px solid red' }}>{error}</div>}
       </form>
     </div>
   );

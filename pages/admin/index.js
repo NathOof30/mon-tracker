@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 
-export default function AdminDashboard({ stats, pixels }) {
+export default function AdminDashboard({ stats, pixels, host }) {
   const [name, setName] = useState('');
   const router = useRouter();
 
@@ -18,51 +18,73 @@ export default function AdminDashboard({ stats, pixels }) {
     });
     if (res.ok) {
       setName('');
-      router.replace(router.asPath); // Rafraîchir les données
+      router.replace(router.asPath);
     }
   };
 
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    alert('Copié : ' + text);
+  };
+
   return (
-    <div style={{ padding: 20, fontFamily: 'sans-serif' }}>
-      <h1>📊 Dashboard Admin</h1>
+    <div className="container">
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40, borderBottom: '2px solid var(--border)', paddingBottom: 20 }}>
+        <h1>Dashboard Admin</h1>
+        <button onClick={async () => { await fetch('/api/admin/logout'); router.push('/login'); }}>Déconnexion</button>
+      </header>
       
-      <div style={{ background: '#f9f9f9', padding: 15, borderRadius: 8, marginBottom: 20 }}>
-        <h3>Créer un nouveau pixel</h3>
+      <div className="box">
+        <h3 style={{ marginBottom: 10 }}>Créer un nouveau pixel</h3>
         <form onSubmit={handleCreate} style={{ display: 'flex', gap: 10 }}>
           <input 
             type="text" 
-            placeholder="Nom du pixel" 
+            placeholder="Nom du pixel (ex: Email Promo)" 
             value={name} 
             onChange={(e) => setName(e.target.value)} 
-            style={{ padding: 8, flex: 1 }}
+            style={{ flex: 1 }}
             maxLength={100}
           />
-          <button type="submit" style={{ padding: '8px 16px' }}>Créer</button>
+          <button type="submit">Créer</button>
         </form>
       </div>
 
       <div style={{ display: 'flex', gap: 20, marginBottom: 30 }}>
-        <div style={{ background: '#f0f0f0', padding: 15, borderRadius: 8 }}>📌 Pixels créés : {stats.totalPixels}</div>
-        <div style={{ background: '#f0f0f0', padding: 15, borderRadius: 8 }}>👁️ Total ouvertures : {stats.totalOpens}</div>
+        <div className="box" style={{ flex: 1, marginBottom: 0 }}>
+          <div style={{ fontSize: '0.9em', textTransform: 'uppercase', fontWeight: 'bold' }}>Pixels Créés</div>
+          <div style={{ fontSize: '2em' }}>{stats.totalPixels}</div>
+        </div>
+        <div className="box" style={{ flex: 1, marginBottom: 0 }}>
+          <div style={{ fontSize: '0.9em', textTransform: 'uppercase', fontWeight: 'bold' }}>Total Ouvertures</div>
+          <div style={{ fontSize: '2em' }}>{stats.totalOpens}</div>
+        </div>
       </div>
 
-      <h2>Liste des pixels</h2>
-      <ul>
-        {pixels.map(p => (
-          <li key={p.id} style={{ marginBottom: 10, padding: 10, border: '1px solid #ddd', borderRadius: 4 }}>
-            <Link href={`/admin/pixels/${p.id}`}>
-              <strong>{p.name}</strong> (ID: {p.id})
-            </Link>
-            <span style={{ marginLeft: 15 }}>Ouvertures: {p.opens}</span>
-          </li>
-        ))}
-      </ul>
+      <h2 style={{ marginBottom: 20 }}>Liste des pixels</h2>
+      {pixels.length === 0 ? <p>Aucun pixel créé pour le moment.</p> : null}
+      
+      {pixels.map(p => (
+        <div key={p.id} className="box" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h3 style={{ marginBottom: 5 }}>
+              <Link href={`/admin/pixels/${p.id}`}>{p.name}</Link>
+            </h3>
+            <div style={{ fontSize: '0.85em', opacity: 0.8 }}>ID: {p.id}</div>
+            <div style={{ fontSize: '0.85em', opacity: 0.8, marginTop: 5 }}>Ouvertures : <strong>{p.opens}</strong></div>
+          </div>
+          <div style={{ display: 'flex', gap: 10, flexDirection: 'column' }}>
+            <button onClick={() => copyToClipboard(p.id)} style={{ fontSize: '0.8em', padding: '5px 10px' }}>Copier ID</button>
+            <button onClick={() => copyToClipboard(`https://${host}/api/tracker/${p.id}`)} style={{ fontSize: '0.8em', padding: '5px 10px' }}>Copier URL Pixel</button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
 
-export const getServerSideProps = withAdminSsr(async () => {
+export const getServerSideProps = withAdminSsr(async (context) => {
   const stats = await PixelService.getStats();
   const pixels = await PixelService.getAllPixels();
-  return { props: { stats, pixels } };
+  const host = context.req.headers.host;
+  return { props: { stats, pixels, host } };
 });

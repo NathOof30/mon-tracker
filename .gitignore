@@ -45,3 +45,4 @@ DEV_DOCS.md
 *.db
 *.sqlite
 next.txt
+ADMIN_SECRETS.md
