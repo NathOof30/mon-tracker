@@ -17,7 +17,7 @@ export default function PixelDetail({ pixel, host }) {
 
   const protocol = host.includes('localhost') ? 'http' : 'https';
   const basePixelUrl = `${protocol}://${host}/api/image/${pixel.id}.gif`;
-  
+
   // State pour le générateur d'URL ciblée
   const [targetName, setTargetName] = useState('');
   const pixelUrl = targetName ? `${basePixelUrl}?cible=${encodeURIComponent(targetName)}` : basePixelUrl;
@@ -45,21 +45,21 @@ export default function PixelDetail({ pixel, host }) {
         <button onClick={() => router.push('/admin')}>⬅ Retour au Dashboard</button>
         <button onClick={handleDelete} style={{ background: '#cc0000', color: 'white', borderColor: '#cc0000', padding: '8px 16px' }}>Supprimer ce pixel</button>
       </div>
-      
+
       <div className="box">
         <h1 style={{ marginBottom: 10 }}>{pixel.name}</h1>
         <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
-          <strong>ID:</strong> {pixel.id} 
+          <strong>ID:</strong> {pixel.id}
           <button onClick={() => copyToClipboard(pixel.id)} style={{ fontSize: '0.75em', padding: '2px 8px' }}>Copier ID</button>
         </div>
         <div style={{ marginBottom: 15, padding: 15, background: 'var(--bg-color)', border: '1px solid var(--border)' }}>
           <strong style={{ display: 'block', marginBottom: 10 }}>🎯 URL Ciblée (Optionnel) :</strong>
           <p style={{ fontSize: '0.85em', color: '#666', marginBottom: 10 }}>Si vous envoyez cet email à une personne spécifique, tapez son nom ci-dessous pour générer une URL de tracking unique.</p>
-          <input 
-            type="text" 
-            placeholder="Ex: jean.dupont" 
-            value={targetName} 
-            onChange={(e) => setTargetName(e.target.value)} 
+          <input
+            type="text"
+            placeholder="Ex: jean.dupont"
+            value={targetName}
+            onChange={(e) => setTargetName(e.target.value)}
             style={{ width: '100%', marginBottom: 10, padding: 8, border: '1px solid #ccc' }}
           />
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -68,7 +68,7 @@ export default function PixelDetail({ pixel, host }) {
           </div>
         </div>
         <div style={{ marginBottom: 10 }}>
-          <strong>Code HTML (à insérer) :</strong> <br/>
+          <strong>Code HTML (à insérer) :</strong> <br />
           <textarea readOnly value={`<img src="${pixelUrl}" width="1" height="1" alt="" style="display:none;" />`} style={{ width: '100%', padding: 10, marginTop: 5, fontFamily: 'monospace', height: 60, border: '1px solid #ccc' }} />
         </div>
         <hr style={{ border: 'none', borderTop: '2px solid var(--border)', margin: '20px 0' }} />
@@ -91,26 +91,38 @@ export default function PixelDetail({ pixel, host }) {
           </thead>
           <tbody>
             {(() => {
-              // On identifie les deux premières requêtes (chronologiques) du proxy Gmail
-              // Comme le tableau est trié de la plus récente à la plus ancienne, on parcourt à l'envers.
-              let proxyCount = 0;
+              // On utilise une fenêtre de 10 secondes pour détecter l'upload
+              const targetFirstProxyTime = {};
               const uploadEventIds = new Set();
+
+              // On parcourt à l'envers (du plus ancien au plus récent)
               for (let i = pixel.logs.length - 1; i >= 0; i--) {
                 const log = pixel.logs[i];
                 if (log.userAgent && log.userAgent.includes('GoogleImageProxy')) {
-                  proxyCount++;
-                  if (proxyCount <= 2) {
+                  // Nettoyage de la clé pour éviter les bugs d'espaces ou de majuscules
+                  const targetKey = (log.target || 'no_target').toLowerCase().trim();
+                  const logTime = new Date(log.timestamp).getTime();
+
+                  if (!targetFirstProxyTime[targetKey]) {
+                    // C'est la TOUTE PREMIÈRE FOIS qu'on voit cette cible via le proxy : c'est l'upload
+                    targetFirstProxyTime[targetKey] = logTime;
                     uploadEventIds.add(log.id);
+                  } else {
+                    // Si on est dans les 10 secondes suivant la toute première vue, on ignore (c'est toujours l'upload)
+                    const diffSeconds = (logTime - targetFirstProxyTime[targetKey]) / 1000;
+                    if (diffSeconds <= 10) {
+                      uploadEventIds.add(log.id);
+                    }
                   }
                 }
               }
 
               return pixel.logs.map(log => {
                 const isUpload = uploadEventIds.has(log.id);
-                
+
                 return (
-                  <tr key={log.id} style={{ 
-                    opacity: isUpload ? 0.4 : 1, 
+                  <tr key={log.id} style={{
+                    opacity: isUpload ? 0.4 : 1,
                     backgroundColor: isUpload ? 'var(--bg-color)' : 'inherit',
                     borderBottom: '1px solid var(--border)'
                   }}>
@@ -119,13 +131,13 @@ export default function PixelDetail({ pixel, host }) {
                       {log.target || <span style={{ color: '#999', fontWeight: 'normal' }}>-</span>}
                     </td>
                     <td style={{ padding: '10px 5px' }}>
-                      {isUpload && <span style={{ 
-                        fontSize: '0.7em', 
-                        background: '#666', 
-                        color: 'white', 
-                        padding: '2px 5px', 
-                        marginRight: '8px', 
-                        borderRadius: '3px' 
+                      {isUpload && <span style={{
+                        fontSize: '0.7em',
+                        background: '#666',
+                        color: 'white',
+                        padding: '2px 5px',
+                        marginRight: '8px',
+                        borderRadius: '3px'
                       }}>UPLOAD (IGNORE)</span>}
                       {log.ip || 'Inconnue'}
                     </td>
