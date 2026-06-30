@@ -6,7 +6,8 @@ const PIXEL_BASE64 = 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 const PIXEL_BUFFER = Buffer.from(PIXEL_BASE64, 'base64');
 
 export default async function handler(req, res) {
-  let { id } = req.query;
+  // On extrait aussi le paramètre cible s'il y en a un (ex: ?cible=jean)
+  let { id, cible } = req.query;
   if (id && id.endsWith('.gif')) id = id.replace('.gif', '');
   
   // Fonction utilitaire pour toujours renvoyer l'image de manière stricte (exigences Gmail)
@@ -25,10 +26,11 @@ export default async function handler(req, res) {
 
   try {
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
-    const userAgent = req.headers['user-agent'];
+    const userAgent = req.headers['user-agent'] || null;
+    const finalTarget = cible || null;
 
-    // Enregistrement de l'ouverture
-    await PixelService.trackPixel(id, ip, userAgent);
+    // Enregistrement de l'ouverture avec la cible optionnelle
+    await PixelService.trackPixel(id, ip, userAgent, finalTarget);
   } catch (error) {
     console.error('Erreur lors du tracking :', error);
     // On capture l'erreur silencieusement pour être SÛR que l'image soit toujours renvoyée
