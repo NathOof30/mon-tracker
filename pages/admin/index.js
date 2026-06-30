@@ -86,7 +86,7 @@ export default function AdminDashboard({ stats, pixels, host }) {
           </div>
           <div style={{ display: 'flex', gap: 10, flexDirection: 'column' }}>
             <button onClick={() => copyToClipboard(p.id)} style={{ fontSize: '0.8em', padding: '5px 10px' }}>Copier ID</button>
-            <button onClick={() => copyToClipboard(`${host.includes('localhost') ? 'http' : 'https'}://${host}/api/tracker/${p.id}.gif`)} style={{ fontSize: '0.8em', padding: '5px 10px' }}>Copier URL Pixel</button>
+            <button onClick={() => copyToClipboard(`${host.includes('localhost') ? 'http' : 'https'}://${host}/api/image/${p.id}.gif`)} style={{ fontSize: '0.8em', padding: '5px 10px' }}>Copier URL Pixel</button>
             <button onClick={() => handleDelete(p.id)} style={{ fontSize: '0.8em', padding: '5px 10px', background: '#cc0000', color: 'white', borderColor: '#cc0000' }}>Supprimer</button>
           </div>
         </div>

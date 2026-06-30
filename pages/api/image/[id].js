@@ -2,7 +2,7 @@ import { PixelService } from '../../../lib/pixelService.js';
 
 // Image PNG transparente 1x1 pixel en base64
 // Image GIF transparente 1x1 pixel (le format le plus léger et 100% transparent pour les emails)
-const PIXEL_BASE64 = 'R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+const PIXEL_BASE64 = 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 const PIXEL_BUFFER = Buffer.from(PIXEL_BASE64, 'base64');
 
 export default async function handler(req, res) {
