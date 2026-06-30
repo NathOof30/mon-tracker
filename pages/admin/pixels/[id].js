@@ -6,7 +6,8 @@ export default function PixelDetail({ pixel, host }) {
   const router = useRouter();
   if (!pixel) return <p>Pixel introuvable</p>;
 
-  const pixelUrl = `https://${host}/api/tracker/${pixel.id}`;
+  const protocol = host.includes('localhost') ? 'http' : 'https';
+  const pixelUrl = `${protocol}://${host}/api/tracker/${pixel.id}`;
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
