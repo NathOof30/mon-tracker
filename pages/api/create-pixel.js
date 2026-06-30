@@ -20,7 +20,7 @@ export default async function handler(req, res) {
     const id = await PixelService.createPixel(name);
     res.status(201).json({
       id,
-      fullUrl: `${req.headers.host.includes('localhost') ? 'http' : 'https'}://${req.headers.host}/api/tracker/${id}.png`
+      fullUrl: `${req.headers.host.includes('localhost') ? 'http' : 'https'}://${req.headers.host}/api/tracker/${id}.gif`
     });
   } catch (error) {
     console.error(error);
