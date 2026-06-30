@@ -10,6 +10,6 @@ async function handler(req, res) {
   }
 
   const id = await PixelService.createPixel(name);
-  res.status(201).json({ id, fullUrl: `/api/tracker/${id}` });
+  res.status(201).json({ id });
 }
 export default withAdminApi(handler);

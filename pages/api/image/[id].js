@@ -1,7 +1,6 @@
 import { PixelService } from '../../../lib/pixelService.js';
 
-// Image PNG transparente 1x1 pixel en base64
-// Image GIF transparente 1x1 pixel (le format le plus léger et 100% transparent pour les emails)
+// Image GIF transparente 1x1 pixel (43 octets — standard industriel pour le tracking email)
 const PIXEL_BASE64 = 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 const PIXEL_BUFFER = Buffer.from(PIXEL_BASE64, 'base64');
 
