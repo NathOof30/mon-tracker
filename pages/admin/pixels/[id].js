@@ -15,7 +15,7 @@ export default function PixelDetail({ pixel, host }) {
   };
 
   const protocol = host.includes('localhost') ? 'http' : 'https';
-  const pixelUrl = `${protocol}://${host}/api/tracker/${pixel.id}`;
+  const pixelUrl = `${protocol}://${host}/api/tracker/${pixel.id}.png`;
 
   const handleDelete = async () => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce pixel et tout son historique ?')) return;

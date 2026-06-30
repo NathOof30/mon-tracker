@@ -6,7 +6,8 @@ const PIXEL_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42m
 const PIXEL_BUFFER = Buffer.from(PIXEL_BASE64, 'base64');
 
 export default async function handler(req, res) {
-  const { id } = req.query;
+  let { id } = req.query;
+  if (id && id.endsWith('.png')) id = id.replace('.png', '');
   
   // Fonction utilitaire pour toujours renvoyer l'image de manière stricte (exigences Gmail)
   const sendPixel = () => {

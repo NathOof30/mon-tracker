@@ -12,7 +12,7 @@ export default function TestPixel() {
   const handleTest = (e) => {
     e.preventDefault();
     if (!pixelId) return;
-    setPixelUrl(`/api/tracker/${pixelId}?t=${Date.now()}`); // t=Date permet d'éviter le cache local lors de multiples tests
+    setPixelUrl(`/api/tracker/${pixelId}.png?t=${Date.now()}`); // t=Date permet d'éviter le cache local lors de multiples tests
   };
 
   return (
