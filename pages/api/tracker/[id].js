@@ -1,8 +1,8 @@
 import { PixelService } from '../../../lib/pixelService.js';
 
 // Image PNG transparente 1x1 pixel en base64
-// Cela évite de dépendre d'un fichier physique et garantit que l'image est toujours disponible
-const PIXEL_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+// Image GIF transparente 1x1 pixel (le format le plus léger et 100% transparent pour les emails)
+const PIXEL_BASE64 = 'R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 const PIXEL_BUFFER = Buffer.from(PIXEL_BASE64, 'base64');
 
 export default async function handler(req, res) {
@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   
   // Fonction utilitaire pour toujours renvoyer l'image de manière stricte (exigences Gmail)
   const sendPixel = () => {
-    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Type', 'image/gif');
     res.setHeader('Content-Length', PIXEL_BUFFER.length);
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
