@@ -18,7 +18,19 @@ export default function AdminDashboard({ stats, pixels, host }) {
     });
     if (res.ok) {
       setName('');
-      router.replace(router.asPath);
+      router.reload();
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce pixel et tout son historique ?')) return;
+    const res = await fetch('/api/admin/delete-pixel', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    if (res.ok) {
+      router.reload();
     }
   };
 
@@ -75,6 +87,7 @@ export default function AdminDashboard({ stats, pixels, host }) {
           <div style={{ display: 'flex', gap: 10, flexDirection: 'column' }}>
             <button onClick={() => copyToClipboard(p.id)} style={{ fontSize: '0.8em', padding: '5px 10px' }}>Copier ID</button>
             <button onClick={() => copyToClipboard(`${host.includes('localhost') ? 'http' : 'https'}://${host}/api/tracker/${p.id}`)} style={{ fontSize: '0.8em', padding: '5px 10px' }}>Copier URL Pixel</button>
+            <button onClick={() => handleDelete(p.id)} style={{ fontSize: '0.8em', padding: '5px 10px', background: '#cc0000', color: 'white', borderColor: '#cc0000' }}>Supprimer</button>
           </div>
         </div>
       ))}
